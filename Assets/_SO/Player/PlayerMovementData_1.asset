@@ -25,7 +25,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 0
   groundDetectionRayLength: 0.02
-  headDectectionRayLength: 0.75
+  headDetectionRayLength: 0.75
   headWidth: 0.75
   wallDetectRayLength: 0.125
   wallDetectionRayHeightMultiplier: 0.9
@@ -42,7 +42,7 @@ MonoBehaviour:
   jumpBuffTime: 0.125
   jumpCoyoteTime: 0.1
   wallSlideSpeed: 5
-  wallSlideDecelerationSpeed: 50
+  wallSlideDecelerationSpeed: 1
   wallJumpDirection: {x: -20, y: 6.5}
   wallJumpBufferTime: 0.125
   wallJumpGravityOnReleaseMultiplier: 1

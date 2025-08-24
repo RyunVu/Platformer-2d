@@ -2,7 +2,7 @@
 using UnityEngine;
 
 [System.Serializable]
-public class PlayerCollisionDeteror 
+public class PlayerCollisionDetector 
 {
     private PlayerController _controller;
     private PlayerDataSO _moveStats;
@@ -24,7 +24,7 @@ public class PlayerCollisionDeteror
     public float wallJumpPostBufferTimer { get; private set; }
     public float dashOnGroundTimer { get; private set; }
 
-    public PlayerCollisionDeteror(PlayerController controller, PlayerDataSO moveStats)
+    public PlayerCollisionDetector(PlayerController controller, PlayerDataSO moveStats)
     {
         _controller = controller;
         _moveStats = moveStats;
