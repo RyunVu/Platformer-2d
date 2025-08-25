@@ -74,12 +74,6 @@ public class PlayerInput : SingletonMonobehaviour<PlayerInput>
         moveInput = _moveAction.ReadValue<Vector2>();
         runIsHeld = _runAction.IsPressed();
         jumpIsHeld = _jumpAction.IsPressed();
-
-        // Reset one-frame input flags at the end of frame
-        if (jumpWasPressed) jumpWasPressed = false;
-        if (jumpWasReleased) jumpWasReleased = false;
-        if (dashWasPressed) dashWasPressed = false;
-        if (interactWasPressed) interactWasPressed = false;
     }
 
     private void LateUpdate()

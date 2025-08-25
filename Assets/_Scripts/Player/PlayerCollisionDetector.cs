@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 
+[System.Serializable]
 public class PlayerCollisionDetector
 {
     private PlayerController _controller;

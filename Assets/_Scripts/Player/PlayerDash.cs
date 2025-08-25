@@ -26,6 +26,8 @@ public class PlayerDash
         _controller = controller;
         _moveStats = moveStats;
         _collisionDetector = collisionDetector;
+
+        Debug.Log("PlayerDash initialized successfully");
     }
 
     public void SetDependencies(PlayerMovement movement, PlayerJump jump, PlayerWallInteraction wallInteraction)

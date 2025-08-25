@@ -32,6 +32,8 @@ public class PlayerWallInteraction
         _controller = controller;
         _moveStats = moveStats;
         _collisionDetector = collisionDetector;
+
+        Debug.Log("PlayerWallInteraction initialized successfully");
     }
 
     public void SetDependencies(PlayerMovement movement, PlayerJump jump)
