@@ -23,7 +23,7 @@ MonoBehaviour:
   maxRunSpeed: 20
   groundLayer:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 256
   groundDetectionRayLength: 0.02
   headDetectionRayLength: 0.75
   headWidth: 0.75
@@ -54,12 +54,12 @@ MonoBehaviour:
   dashDiagonallyBias: 0.4
   dashGravityOnReleaseMultiplier: 1
   dashTimeForUpwardsCancel: 0.027
-  debugShowIsGroundedBox: 0
-  debugShowHeadBumpBox: 0
-  debugShowWallHitBox: 0
-  showWalkJumpArc: 0
-  showRunJumpArc: 0
-  stopOnCollision: 0
-  drawRight: 0
+  debugShowIsGroundedBox: 1
+  debugShowHeadBumpBox: 1
+  debugShowWallHitBox: 1
+  showWalkJumpArc: 1
+  showRunJumpArc: 1
+  stopOnCollision: 1
+  drawRight: 1
   arcResolution: 20
   visualizationSteps: 90

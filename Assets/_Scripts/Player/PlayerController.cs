@@ -2,12 +2,6 @@
 
 [DisallowMultipleComponent]
 [RequireComponent(typeof(Rigidbody2D))]
-[RequireComponent(typeof(PlayerMovement))]
-[RequireComponent(typeof(PlayerJump))]
-[RequireComponent(typeof(PlayerWallInteraction))]
-[RequireComponent(typeof(PlayerDash))]
-[RequireComponent(typeof(PlayerCollisionDetector))]
-[RequireComponent(typeof(PlayerStateMachine))]
 public class PlayerController : MonoBehaviour
 {
     [Header("References")]
@@ -26,6 +20,9 @@ public class PlayerController : MonoBehaviour
 
     // Shared ref
     private Rigidbody2D _rb;
+
+    // Animation state tracking
+    private string _lastAnimationState;
 
     public Rigidbody2D rb => _rb;
     public Collider2D bodyCollider => _bodyColl;
@@ -46,6 +43,19 @@ public class PlayerController : MonoBehaviour
         _stateMachine = new PlayerStateMachine(this, _movement, _jump, _wallInteraction, _dash);
     }
 
+    private void Start()
+    {
+        // Ensure we have a valid animator reference
+        if (_playerAnimator == null)
+        {
+            _playerAnimator = GetComponent<PlayerAnimator>();
+            if (_playerAnimator == null)
+            {
+                Debug.LogWarning($"PlayerAnimator not found on {gameObject.name}!");
+            }
+        }
+    }
+
     private void Update()
     {
         _collisionDetector.UpdateTimers();
@@ -56,7 +66,9 @@ public class PlayerController : MonoBehaviour
         _dash.HandleInput();
 
         _stateMachine.UpdateState();
-        //UpdateAnimationState();
+
+        // Update animations
+        UpdateAnimationState();
     }
 
     private void FixedUpdate()
@@ -97,19 +109,96 @@ public class PlayerController : MonoBehaviour
         return _rb.linearVelocity.y;
     }
 
-    //private void UpdateAnimationState()
-    //{
-    //    if (_dash.isDashing)
-    //        _playerAnimator.ChangeAnimationState(PlayerAnimator.PLAYER_Dash);
-    //    else if (_jump.isJumping && _jump.verticalVelocity >= 0f)
-    //        _playerAnimator.ChangeAnimationState(PlayerAnimator.PLAYER_Jump);
-    //    else if ((_jump.isJumping || _jump.isFalling) && _jump.verticalVelocity < 0f)
-    //        _playerAnimator.ChangeAnimationState(PlayerAnimator.PLAYER_Fall);
-    //    else if (Mathf.Abs(InputManager.MoveInput.x) > 0f && _collisionDetector.isGrounded)
-    //        _playerAnimator.ChangeAnimationState(PlayerAnimator.PLAYER_RUN);
-    //    else
-    //        _playerAnimator.ChangeAnimationState(PlayerAnimator.PLAYER_IDLE);
-    //}
+    private void UpdateAnimationState()
+    {
+        // Early return if no animator
+        if (_playerAnimator == null) return;
+
+        string targetState = DetermineAnimationState();
+
+        // Only change animation if it's different from the last one
+        if (targetState != _lastAnimationState)
+        {
+            _playerAnimator.ChangeAnimationState(targetState);
+            _lastAnimationState = targetState;
+        }
+
+        // Update facing direction for sprite flipping
+        UpdateFacingDirection();
+    }
+
+    private string DetermineAnimationState()
+    {
+        // Priority order: Dash > Wall Slide > Jump/Fall > Run > Idle
+
+        if (_dash.isDashing)
+        {
+            return PlayerAnimator.PLAYER_DASH;
+        }
+
+        if (_wallInteraction.isWallSliding)
+        {
+            return PlayerAnimator.PLAYER_WALL_SLIDE;
+        }
+
+        if (_jump.isJumping && _jump.verticalVelocity > 0f)
+        {
+            return PlayerAnimator.PLAYER_JUMP;
+        }
+
+        if ((_jump.isJumping || _jump.isFalling) && _jump.verticalVelocity <= 0f)
+        {
+            return PlayerAnimator.PLAYER_FALL;
+        }
+
+        // Check if player is moving horizontally and grounded
+        if (Mathf.Abs(_movement.horizontalVelocity) > 0.1f && _collisionDetector.isGrounded)
+        {
+            return PlayerAnimator.PLAYER_RUN;
+        }
+
+        return PlayerAnimator.PLAYER_IDLE;
+    }
+
+    private void UpdateFacingDirection()
+    {
+        // Handle sprite flipping based on movement direction
+        if (_movement != null)
+        {
+            Vector3 scale = transform.localScale;
+
+            if (_movement.isFacingRight && scale.x < 0)
+            {
+                scale.x = Mathf.Abs(scale.x);
+                transform.localScale = scale;
+            }
+            else if (!_movement.isFacingRight && scale.x > 0)
+            {
+                scale.x = -Mathf.Abs(scale.x);
+                transform.localScale = scale;
+            }
+        }
+    }
+
+    // Public method to manually trigger animation changes (useful for special cases)
+    public void PlayAnimation(string animationState, bool forceChange = false)
+    {
+        if (_playerAnimator != null)
+        {
+            _playerAnimator.ChangeAnimationState(animationState, forceChange);
+            _lastAnimationState = animationState;
+        }
+    }
+
+    // Public method to trigger landing animation (can be called from collision detection)
+    public void PlayLandingAnimation()
+    {
+        if (_playerAnimator != null && _collisionDetector.justLanded)
+        {
+            _playerAnimator.ChangeAnimationState(PlayerAnimator.PLAYER_LAND);
+            _lastAnimationState = PlayerAnimator.PLAYER_LAND;
+        }
+    }
 
     #region Component Access Methods (for Player manager)
 
@@ -188,4 +277,3 @@ public class PlayerController : MonoBehaviour
         }
     }
 }
-

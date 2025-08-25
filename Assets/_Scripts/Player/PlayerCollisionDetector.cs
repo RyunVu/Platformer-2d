@@ -1,5 +1,5 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
+using UnityEngine.UIElements;
 
 [System.Serializable]
 public class PlayerCollisionDetector 
@@ -16,7 +16,14 @@ public class PlayerCollisionDetector
     public bool isGrounded { get; private set; }
     public bool isHeadBumped { get; private set; }
     public bool isTouchingWall { get; private set; }
+    public bool justLanded { get; private set; }
     public RaycastHit2D lastWallHit => _lastWallHit;
+
+    // Landing detection
+    private bool _wasGroundedLastFrame;
+    private float _landingTimer;
+    private float _landingAnimationDuration = 0.2f; // How long the landing animation should play
+
 
     // Timers
     public float jumpBufferTimer { get; private set; }
@@ -52,6 +59,16 @@ public class PlayerCollisionDetector
 
         if(isGrounded)
             dashOnGroundTimer -= Time.deltaTime;
+
+        // Update landing timer
+        if (_landingTimer > 0)
+        {
+            _landingTimer -= Time.deltaTime;
+            if (_landingTimer <= 0)
+            {
+                justLanded = false;
+            }
+        }
     }
 
     public void SetJumpBufferTimer(float timer)
@@ -81,7 +98,17 @@ public class PlayerCollisionDetector
 
         _groundHit = Physics2D.BoxCast(boxCastOrigin, boxCastSize, 0f, Vector2.down, _moveStats.groundDetectionRayLength, _moveStats.groundLayer);
 
-        isGrounded = _groundHit.collider != null;
+        bool newGroundedState = _groundHit.collider != null;
+
+        // Check for landing - if we weren't grounded last frame but are now
+        if (!_wasGroundedLastFrame && newGroundedState)
+        {
+            justLanded = true;
+            _landingTimer = _landingAnimationDuration;
+        }
+
+        _wasGroundedLastFrame = isGrounded;
+        isGrounded = newGroundedState;
 
         #region Debug Visualization
         if (_moveStats.debugShowIsGroundedBox)
