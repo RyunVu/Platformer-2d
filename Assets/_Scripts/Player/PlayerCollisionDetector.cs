@@ -1,8 +1,6 @@
 ﻿using UnityEngine;
-using UnityEngine.UIElements;
 
-[System.Serializable]
-public class PlayerCollisionDetector 
+public class PlayerCollisionDetector
 {
     private PlayerController _controller;
     private PlayerDataSO _moveStats;
@@ -23,7 +21,6 @@ public class PlayerCollisionDetector
     private bool _wasGroundedLastFrame;
     private float _landingTimer;
     private float _landingAnimationDuration = 0.2f; // How long the landing animation should play
-
 
     // Timers
     public float jumpBufferTimer { get; private set; }
@@ -49,15 +46,15 @@ public class PlayerCollisionDetector
     {
         jumpBufferTimer -= Time.deltaTime;
 
-        if(!isGrounded)
+        if (!isGrounded)
             coyoteTimer -= Time.deltaTime;
         else
             coyoteTimer = _moveStats.jumpCoyoteTime;
 
         if (!ShouldApplyPostWallJumpBuffer())
-            wallJumpPostBufferTimer -= Time.deltaTime;  
+            wallJumpPostBufferTimer -= Time.deltaTime;
 
-        if(isGrounded)
+        if (isGrounded)
             dashOnGroundTimer -= Time.deltaTime;
 
         // Update landing timer
@@ -84,6 +81,11 @@ public class PlayerCollisionDetector
     public void SetDashOnGroundTimer(float timer)
     {
         dashOnGroundTimer = timer;
+    }
+
+    public void SetLandingAnimationDuration(float duration)
+    {
+        _landingAnimationDuration = duration;
     }
 
     public bool ShouldApplyPostWallJumpBuffer()
@@ -184,7 +186,4 @@ public class PlayerCollisionDetector
         }
         #endregion
     }
-
-
 }
-

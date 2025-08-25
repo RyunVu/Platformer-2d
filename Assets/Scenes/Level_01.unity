@@ -129,6 +129,7 @@ GameObject:
   m_Component:
   - component: {fileID: 35187716}
   - component: {fileID: 35187717}
+  - component: {fileID: 35187718}
   m_Layer: 6
   m_Name: Sprite
   m_TagString: Untagged
@@ -206,6 +207,28 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!95 &35187718
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 35187715}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: fef538a59eeefa846b0668bcf436c48f, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &156668211
 GameObject:
   m_ObjectHideFlags: 0
@@ -1562,6 +1585,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ceb7be1b801cec641adcf4f54b3fd50d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _animator: {fileID: 35187718}
+  _crossFadeDuration: 0.1
+  _useCrossFade: 1
+  _debugMode: 0
 --- !u!114 &1753234819
 MonoBehaviour:
   m_ObjectHideFlags: 0

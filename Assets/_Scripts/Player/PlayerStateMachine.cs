@@ -13,7 +13,6 @@ public enum PlayerState
     AirDashing
 }
 
-[System.Serializable]
 public class PlayerStateMachine
 {
     private PlayerController _controller;

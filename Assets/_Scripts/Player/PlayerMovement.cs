@@ -1,7 +1,5 @@
 ﻿using System;
 using UnityEngine;
-
-[System.Serializable]
 public class PlayerMovement
 {
     private PlayerController _controller;
@@ -67,6 +65,8 @@ public class PlayerMovement
     private void TurnCheck(Vector2 moveInput)
     {
         if (moveInput.x > 0 && !isFacingRight)
+            Turn();
+        else if (moveInput.x < 0 && isFacingRight)
             Turn();
     }
 

@@ -129,7 +129,7 @@ public class PlayerController : MonoBehaviour
 
     private string DetermineAnimationState()
     {
-        // Priority order: Dash > Wall Slide > Jump/Fall > Run > Idle
+        // Priority order: Dash > Wall Slide > Landing > Jump/Fall > Run > Idle
 
         if (_dash.isDashing)
         {
@@ -139,6 +139,12 @@ public class PlayerController : MonoBehaviour
         if (_wallInteraction.isWallSliding)
         {
             return PlayerAnimator.PLAYER_WALL_SLIDE;
+        }
+
+        // Landing takes priority when it just happened
+        if (_collisionDetector.justLanded)
+        {
+            return PlayerAnimator.PLAYER_LAND;
         }
 
         if (_jump.isJumping && _jump.verticalVelocity > 0f)
