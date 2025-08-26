@@ -35,7 +35,7 @@ MonoBehaviour:
   gravityOnReleaseMultiplier: 2
   maxFallSpeed: 26
   numberOfJumpsAllowed: 2
-  resetJumpOnWallSlide: 1
+  resetJumpOnWallSlide: 0
   timeForUpwardsCancel: 0.027
   apexThreshold: 0.97
   apexHangTime: 0.075
@@ -50,7 +50,7 @@ MonoBehaviour:
   dashSpeed: 40
   timeBtwDashesOnGround: 0.225
   resetDashOnWallSlide: 1
-  numberOfDashes: 2
+  numberOfDashes: 1
   dashDiagonallyBias: 0.4
   dashGravityOnReleaseMultiplier: 1
   dashTimeForUpwardsCancel: 0.027

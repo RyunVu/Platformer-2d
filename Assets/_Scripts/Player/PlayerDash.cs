@@ -21,13 +21,14 @@ public class PlayerDash
     private float _dashFastFallTime;
     private float _dashFastFallReleaseSpeed;
 
+
     public PlayerDash(PlayerController controller, PlayerDataSO moveStats, PlayerCollisionDetector collisionDetector)
     {
         _controller = controller;
         _moveStats = moveStats;
         _collisionDetector = collisionDetector;
 
-        Debug.Log("PlayerDash initialized successfully");
+        //Debug.Log("PlayerDash initialized successfully");
     }
 
     public void SetDependencies(PlayerMovement movement, PlayerJump jump, PlayerWallInteraction wallInteraction)
@@ -72,7 +73,7 @@ public class PlayerDash
         HandleDashFastFall();
 
         // Check for landing
-        if (isDashing && _collisionDetector.isGrounded)
+        if (_collisionDetector.isGrounded)
         {
             ResetDashes();
             isAirDashing = false;

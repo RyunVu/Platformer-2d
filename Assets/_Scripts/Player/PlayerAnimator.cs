@@ -18,6 +18,7 @@ public class PlayerAnimator : MonoBehaviour
     [Header("Animation Settings")]
     [SerializeField] private float _crossFadeDuration = 0.1f;
     [SerializeField] private bool _useCrossFade = true;
+    [SerializeField] private float _immediateTransitionThreshold = 0.05f; // For very quick transitions
 
     [Header("Debug")]
     [SerializeField] private bool _debugMode = false;
@@ -75,15 +76,42 @@ public class PlayerAnimator : MonoBehaviour
         _previousState = _currentState;
         _currentState = newState;
 
-        // Play animation with or without crossfade
-        if (_useCrossFade && _crossFadeDuration > 0)
+        // Handle special cases for immediate transitions
+        bool shouldUseImmediateTransition = ShouldUseImmediateTransition(_previousState, newState);
+
+        // Play animation with appropriate method
+        if (_useCrossFade && _crossFadeDuration > 0 && !shouldUseImmediateTransition)
         {
             _animator.CrossFade(newState, _crossFadeDuration);
         }
         else
         {
-            _animator.Play(newState);
+            // Use Play for immediate transitions or when crossfade is disabled
+            _animator.Play(newState, 0, 0f); // Layer 0, normalized time 0
         }
+    }
+
+    /// <summary>
+    /// Determines if we should use immediate transition instead of crossfade
+    /// </summary>
+    private bool ShouldUseImmediateTransition(string fromState, string toState)
+    {
+        // DON'T use immediate transition when coming from landing - use normal crossfade
+        // This prevents the freeze on first frame issue
+
+        // Use immediate transition for dash (responsive feel)
+        if (toState == PLAYER_DASH)
+        {
+            return true;
+        }
+
+        // Use immediate transition when coming out of dash
+        if (fromState == PLAYER_DASH)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -103,7 +131,30 @@ public class PlayerAnimator : MonoBehaviour
         _previousState = _currentState;
         _currentState = newState;
 
-        _animator.CrossFade(newState, customCrossFadeDuration);
+        if (customCrossFadeDuration <= _immediateTransitionThreshold)
+        {
+            _animator.Play(newState, 0, 0f);
+        }
+        else
+        {
+            _animator.CrossFade(newState, customCrossFadeDuration);
+        }
+    }
+
+    /// <summary>
+    /// Force play animation immediately without crossfade
+    /// </summary>
+    public void PlayImmediately(string newState)
+    {
+        if (_animator == null || string.IsNullOrEmpty(newState))
+            return;
+
+        if (_debugMode)
+            Debug.Log($"Playing animation '{newState}' immediately");
+
+        _previousState = _currentState;
+        _currentState = newState;
+        _animator.Play(newState, 0, 0f);
     }
 
     /// <summary>

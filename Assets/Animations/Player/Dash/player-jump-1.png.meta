@@ -1,12 +1,5 @@
 fileFormatVersion: 2
-guid: 448d57c5e4c694686badaba281a6adff
-AssetOrigin:
-  serializedVersion: 1
-  productId: 103349
-  packageName: Sunny Land
-  packageVersion: 1.1
-  assetPath: Assets/SunnyLand Artwork/Sprites/player/crouch/player-crouch-2.png
-  uploadId: 540939
+guid: 77863c58247b3bc4a89f3f60f4faae6d
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}

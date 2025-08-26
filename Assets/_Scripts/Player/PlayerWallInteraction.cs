@@ -91,10 +91,8 @@ public class PlayerWallInteraction
                 _jump?.ResetJumpValues();
                 ResetWallJumpValues();
 
-                if (_moveStats.resetJumpOnWallSlide)
-                {
-                    _jump?.ResetJumpCount();
-                }
+                // Remove the resetJumpOnWallSlide check from here
+                // Don't reset jump count just for wall sliding
 
                 isWallSlideFalling = false;
                 isWallSliding = true;
@@ -109,6 +107,30 @@ public class PlayerWallInteraction
         {
             StopWallSlide();
         }
+    }
+
+    private void InitiateWallJump()
+    {
+        if (!isWallJumping)
+        {
+            isWallJumping = true;
+            _movement?.SetUseWallJumpMoveStats(true);
+        }
+
+        StopWallSlide();
+        _jump?.ResetJumpValues();
+        _wallJumpTime = 0f;
+
+        // Apply the resetJumpOnWallSlide flag HERE when actually wall jumping
+        if (_moveStats.resetJumpOnWallSlide)
+        {
+            _jump?.ResetJumpCount(); // Reset jump count when performing wall jump
+        }
+
+        verticalVelocity = _moveStats.wallJumpDirection.y;
+
+        float direction = Mathf.Sign(_controller.transform.position.x - _collisionDetector.lastWallHit.collider.ClosestPoint(_controller.bodyCollider.bounds.center).x);
+        _movement?.SetHorizontalVelocity(Mathf.Abs(_moveStats.wallJumpDirection.x) * direction);
     }
 
     private void HandleWallJumpInput()
@@ -143,24 +165,6 @@ public class PlayerWallInteraction
         {
             InitiateWallJump();
         }
-    }
-
-    private void InitiateWallJump()
-    {
-        if (!isWallJumping)
-        {
-            isWallJumping = true;
-            _movement?.SetUseWallJumpMoveStats(true);
-        }
-
-        StopWallSlide();
-        _jump?.ResetJumpValues();
-        _wallJumpTime = 0f;
-
-        verticalVelocity = _moveStats.initialWallJumpVelocity;
-
-        float direction = Mathf.Sign(_controller.transform.position.x - _collisionDetector.lastWallHit.collider.ClosestPoint(_controller.bodyCollider.bounds.center).x);
-        _movement?.SetHorizontalVelocity(Mathf.Abs(_moveStats.wallJumpDirection.x) * direction);
     }
 
     private void UpdateWallSlide()

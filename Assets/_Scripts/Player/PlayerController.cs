@@ -24,6 +24,18 @@ public class PlayerController : MonoBehaviour
     // Animation state tracking
     private string _lastAnimationState;
 
+    // Landing sprite control (not animation)
+    [Header("Landing Settings")]
+    [SerializeField] private float _landingDuration = 0.2f;
+    [SerializeField] private float _minimumFallHeightForLanding = 2f; // Add this threshold
+    private bool _isLanding;
+    private float _landingStartTime;
+
+    // Fall height tracking
+    private float _fallStartHeight;
+    private bool _isFalling;
+    private bool _wasGroundedLastFrame;
+
     public Rigidbody2D rb => _rb;
     public Collider2D bodyCollider => _bodyColl;
     public Collider2D feetCollider => _feetColl;
@@ -38,6 +50,7 @@ public class PlayerController : MonoBehaviour
         _collisionDetector = new PlayerCollisionDetector(this, moveStats);
         _movement = new PlayerMovement(this, moveStats, _collisionDetector);
         _jump = new PlayerJump(this, moveStats, _collisionDetector);
+        Debug.Log("PlayerJump created: " + (_jump != null));
         _wallInteraction = new PlayerWallInteraction(this, moveStats, _collisionDetector);
         _dash = new PlayerDash(this, moveStats, _collisionDetector);
         _stateMachine = new PlayerStateMachine(this, _movement, _jump, _wallInteraction, _dash);
@@ -66,6 +79,12 @@ public class PlayerController : MonoBehaviour
         _dash.HandleInput();
 
         _stateMachine.UpdateState();
+
+        // Update fall height tracking
+        UpdateFallHeightTracking();
+
+        // Update landing 
+        UpdateLandingState();
 
         // Update animations
         UpdateAnimationState();
@@ -109,10 +128,88 @@ public class PlayerController : MonoBehaviour
         return _rb.linearVelocity.y;
     }
 
+    private void UpdateFallHeightTracking()
+    {
+        bool isCurrentlyGrounded = _collisionDetector.isGrounded;
+
+        if (_collisionDetector.justLanded)
+        {
+            // Calculate fall distance
+            float fallDistance = _fallStartHeight - transform.position.y;
+
+            // Only trigger landing animation if we fell far enough
+            if (fallDistance >= _minimumFallHeightForLanding)
+            {
+                // Begin landing lock
+                _isLanding = true;
+                _landingStartTime = Time.time;
+
+                // Play landing sprite instantly
+                _playerAnimator.ChangeAnimationState(PlayerAnimator.PLAYER_LAND, true);
+                _lastAnimationState = PlayerAnimator.PLAYER_LAND;
+            }
+        }
+
+        // Start tracking fall when leaving ground (not during initial jump)
+        if (_wasGroundedLastFrame && !isCurrentlyGrounded && !_jump.isJumping)
+        {
+            _fallStartHeight = transform.position.y;
+            _isFalling = true;
+        }
+
+        // Continue tracking highest point if we're in air (for jump cases)
+        if (!isCurrentlyGrounded)
+        {
+            if (_rb.linearVelocity.y <= 0f) // Only track when falling down
+            {
+                if (!_isFalling)
+                {
+                    // Start tracking from the highest point when we begin falling
+                    _fallStartHeight = transform.position.y;
+                    _isFalling = true;
+                }
+                // Don't update fallStartHeight while falling - keep the highest point
+            }
+            else if (_rb.linearVelocity.y > 0f && _isFalling)
+            {
+                // If we start going up again (double jump, etc.), update the start height
+                _fallStartHeight = Mathf.Max(_fallStartHeight, transform.position.y);
+            }
+        }
+
+        // Stop tracking when grounded
+        if (isCurrentlyGrounded)
+        {
+            _isFalling = false;
+        }
+
+        _wasGroundedLastFrame = isCurrentlyGrounded;
+    }
+
+    private void UpdateLandingState()
+    {
+        if (!_isLanding) return;
+
+        bool hasMoveInput = Mathf.Abs(Input.GetAxisRaw("Horizontal")) > 0.1f;
+        bool hasJumpInput = Input.GetButton("Jump");
+
+        float elapsed = Time.time - _landingStartTime;
+
+        // Break landing if input happens or timer runs out
+        if (elapsed >= _landingDuration || hasMoveInput || hasJumpInput)
+        {
+            _isLanding = false;
+            // Don't force animation change here - let normal animation update handle it
+        }
+    }
+
     private void UpdateAnimationState()
     {
         // Early return if no animator
         if (_playerAnimator == null) return;
+
+        // If we're in landing state, don't change animation
+        if (_isLanding) return;
 
         string targetState = DetermineAnimationState();
 
@@ -141,8 +238,8 @@ public class PlayerController : MonoBehaviour
             return PlayerAnimator.PLAYER_WALL_SLIDE;
         }
 
-        // Landing takes priority when it just happened
-        if (_collisionDetector.justLanded)
+        // Landing takes priority when it's actively showing (just a sprite, not animation)
+        if (_isLanding)
         {
             return PlayerAnimator.PLAYER_LAND;
         }
