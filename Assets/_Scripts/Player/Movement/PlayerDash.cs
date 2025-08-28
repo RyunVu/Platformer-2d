@@ -21,6 +21,10 @@ public class PlayerDash
     private float _dashFastFallTime;
     private float _dashFastFallReleaseSpeed;
 
+    // Audio and Effects
+    private PlayerAudioManager _audioManager;
+    private PlayerEffectsManager _effectsManager;
+    private bool _hasPlayedDashSound;
 
     public PlayerDash(PlayerController controller, PlayerDataSO moveStats, PlayerCollisionDetector collisionDetector)
     {
@@ -28,7 +32,14 @@ public class PlayerDash
         _moveStats = moveStats;
         _collisionDetector = collisionDetector;
 
-        //Debug.Log("PlayerDash initialized successfully");
+        // Get audio and effects managers
+        _audioManager = _controller.GetComponentInChildren<PlayerAudioManager>();
+        _effectsManager = _controller.GetComponentInChildren<PlayerEffectsManager>();
+
+        if (_audioManager == null)
+            Debug.LogWarning("PlayerAudioManager not found on " + _controller.name);
+        if (_effectsManager == null)
+            Debug.LogWarning("PlayerEffectsManager not found on " + _controller.name);
     }
 
     public void SetDependencies(PlayerMovement movement, PlayerJump jump, PlayerWallInteraction wallInteraction)
@@ -77,13 +88,19 @@ public class PlayerDash
         {
             ResetDashes();
             isAirDashing = false;
-            isDashing = false;
+
+            // End dash if we hit the ground
+            if (isDashing)
+            {
+                EndDash();
+            }
         }
     }
 
     public void ResetDashValues()
     {
         _isDashFastFalling = false;
+        _hasPlayedDashSound = false;
     }
 
     public void ResetDashes()
@@ -110,11 +127,43 @@ public class PlayerDash
         _numberOfDashesUsed++;
         _isDashFastFalling = true;
         _dashTimer = 0f;
+        _hasPlayedDashSound = false;
         _collisionDetector.SetDashOnGroundTimer(_moveStats.timeBtwDashesOnGround);
 
         _jump?.ResetJumpValues();
         _wallInteraction?.ResetWallJumpValues();
         _wallInteraction?.StopWallSlide();
+
+        // Play dash audio and effects
+        PlayDashAudioAndEffects();
+    }
+
+    private void PlayDashAudioAndEffects()
+    {
+        // Play dash sound
+        if (!_hasPlayedDashSound)
+        {
+            _audioManager?.PlayDashSound();
+            _hasPlayedDashSound = true;
+        }
+
+        // Start dash visual effects
+        _effectsManager?.StartDashEffect(_dashDirection);
+
+        // Optional: Add screen shake for dash
+        // CameraShake.Instance?.ShakeCamera(0.1f, 0.1f);
+    }
+
+    private void EndDash()
+    {
+        isDashing = false;
+        isAirDashing = false;
+
+        // Play dash end sound (optional)
+        _audioManager?.PlayDashEndSound();
+
+        // Stop dash visual effects
+        _effectsManager?.StopDashEffect();
     }
 
     private Vector2 GetClosestDashDirection(Vector2 inputDirection)
@@ -163,8 +212,7 @@ public class PlayerDash
                     ResetDashes();
                 }
 
-                isAirDashing = false;
-                isDashing = false;
+                EndDash();
 
                 if (!_jump.isJumping && !_wallInteraction.isWallJumping)
                 {
@@ -218,5 +266,23 @@ public class PlayerDash
                 _isDashFastFalling = false;
             }
         }
+    }
+
+    // Public method to get dash direction (useful for other systems)
+    public Vector2 GetDashDirection()
+    {
+        return _dashDirection;
+    }
+
+    // Public method to check if dash is on cooldown
+    public bool IsOnCooldown()
+    {
+        return _collisionDetector.dashOnGroundTimer > 0f;
+    }
+
+    // Public method to get remaining dashes
+    public int GetRemainingDashes()
+    {
+        return Mathf.Max(0, _moveStats.numberOfDashes - _numberOfDashesUsed);
     }
 }

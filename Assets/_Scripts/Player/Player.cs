@@ -7,6 +7,8 @@ public class Player : MonoBehaviour
     [Header("Player Components")]
     [HideInInspector] public PlayerController controller;
     [HideInInspector] public PlayerAnimator animator;
+    [HideInInspector] public PlayerAudioManager audioManager;
+    [HideInInspector] public PlayerEffectsManager effectManager;
 
     // Properties to access the internal components through the controller
     public PlayerMovement movement => controller?.GetMovement();
@@ -29,6 +31,8 @@ public class Player : MonoBehaviour
         // Get required components
         controller = GetComponent<PlayerController>();
         animator = GetComponent<PlayerAnimator>();
+        audioManager = GetComponentInChildren<PlayerAudioManager>();
+        effectManager = GetComponentInChildren<PlayerEffectsManager>();
 
         // Validate components
         if (controller == null)

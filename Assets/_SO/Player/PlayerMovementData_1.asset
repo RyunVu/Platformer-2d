@@ -47,11 +47,11 @@ MonoBehaviour:
   wallJumpBufferTime: 0.125
   wallJumpGravityOnReleaseMultiplier: 1
   dashTime: 0.11
-  dashSpeed: 40
-  timeBtwDashesOnGround: 0.225
+  dashSpeed: 28
+  timeBtwDashesOnGround: 0.4
   resetDashOnWallSlide: 1
   numberOfDashes: 1
-  dashDiagonallyBias: 0.4
+  dashDiagonallyBias: 0.5
   dashGravityOnReleaseMultiplier: 1
   dashTimeForUpwardsCancel: 0.027
   debugShowIsGroundedBox: 1

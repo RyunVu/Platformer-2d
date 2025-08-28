@@ -23,13 +23,26 @@ public class PlayerJump
     private float _timePastApexThreshold;
     private bool _isPastApexThreshold;
 
+    // Audio and Effects
+    private PlayerAudioManager _audioManager;
+    private PlayerEffectsManager _effectsManager;
+    private float _fallStartHeight;
+    private bool _trackingFallHeight;
+
     public PlayerJump(PlayerController controller, PlayerDataSO moveStats, PlayerCollisionDetector collisionDeteror)
     {
         _controller = controller;
         _moveStats = moveStats;
         _collisionDetector = collisionDeteror;
 
-        //Debug.Log("PlayerJump initialized successfully");
+        // Get audio and effects managers
+        _audioManager = _controller.GetComponentInChildren<PlayerAudioManager>();
+        _effectsManager = _controller.GetComponentInChildren<PlayerEffectsManager>();
+
+        if (_audioManager == null)
+            Debug.LogWarning("PlayerAudioManager not found on " + _controller.name);
+        if (_effectsManager == null)
+            Debug.LogWarning("PlayerEffectsManager not found on " + _controller.name);
     }
 
     public void HandleInput()
@@ -146,7 +159,25 @@ public class PlayerJump
         _numberOfJumpsUsed += jumpsToAdd;
         verticalVelocity = _moveStats.initialJumpVelocity;
 
+        // Play jump sound and effects
+        PlayJumpAudioAndEffects();
         //Debug.Log($"Jump initiated! Vertical velocity set to: {verticalVelocity}");
+    }
+
+    private void PlayJumpAudioAndEffects()
+    {
+        // Play jump sound
+        _audioManager?.PlayJumpSound(_numberOfJumpsUsed);
+
+        // Play jump effects
+        _effectsManager?.PlayJumpEffect(_numberOfJumpsUsed);
+
+        // Add screen shake for higher jumps
+        if (_numberOfJumpsUsed > 1)
+        {
+            // You can implement screen shake here if you have a camera shake system
+            // CameraShake.Instance?.ShakeCamera(0.1f, 0.1f);
+        }
     }
 
     private void ApplyJumpPhysics()
@@ -228,9 +259,46 @@ public class PlayerJump
     {
         if ((isJumping || isFalling) && _collisionDetector.isGrounded && verticalVelocity <= 0f)
         {
+            float fallDistance = 0f;
+            if (_trackingFallHeight)
+            {
+                fallDistance = _fallStartHeight - _controller.transform.position.y;
+            }
+
+            // Play landing sound and effects
+            PlayLandingAudioAndEffects(fallDistance);
+
             //Debug.Log("Landing detected - resetting jump values");
             ResetJumpValues();
             verticalVelocity = Physics2D.gravity.y;
         }
+    }
+
+    private void PlayLandingAudioAndEffects(float fallDistance)
+    {
+        // Only play effects if we fell a reasonable distance
+        if (fallDistance > 0.5f)
+        {
+            // Play landing sound
+            _audioManager?.PlayLandingSound(fallDistance);
+
+            // Play landing effects
+            _effectsManager?.PlayLandingEffect(fallDistance);
+
+            // Add screen shake for hard landings
+            if (fallDistance > 4f)
+            {
+                //CameraShake.Instance?.ShakeCamera(0.2f, 0.3f);
+            }
+        }
+    }
+
+    public float GetCurrentFallDistance()
+    {
+        if (_trackingFallHeight)
+        {
+            return _fallStartHeight - _controller.transform.position.y;
+        }
+        return 0f;
     }
 }
